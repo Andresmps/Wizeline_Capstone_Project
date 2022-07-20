@@ -18,6 +18,7 @@ from airflow.utils.trigger_rule import TriggerRule
 DAG_ID = "gcp_database_ingestion_workflow"
 STABILITY_STATE = "unstable"
 CLOUD_PROVIDER = "gcp"
+API_VERSION = "V1"
 
 # GCP constants
 GCP_CONN_ID = "gcp_conn"
@@ -114,6 +115,7 @@ with DAG(
         sql=f"SELECT COUNT(*) AS total_rows FROM {POSTGRES_TABLE_NAME}",
         follow_task_ids_if_false=[continue_process.task_id],
         follow_task_ids_if_true=[clear_table.task_id],
+        api_version=API_VERSION
     )
 
     end_workflow = DummyOperator(task_id="end_workflow")
