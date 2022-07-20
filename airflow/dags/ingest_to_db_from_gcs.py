@@ -80,7 +80,7 @@ def ingest_data_from_gcs(
         user_purchase_df.drop([0], axis=0, inplace=True)
         print(user_purchase_df.shape)
 
-        user_purchase_df = user_purchase_df.dtype(
+        user_purchase_df = user_purchase_df.astype(
             {
                 'invoice_number': str,
                 'stock_code': str,
