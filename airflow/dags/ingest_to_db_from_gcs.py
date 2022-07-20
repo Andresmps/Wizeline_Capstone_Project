@@ -13,7 +13,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.trigger_rule import TriggerRule
-from pandas import pd
+import pandas as pd
 
 # General constants
 DAG_ID = "gcp_database_ingestion_workflow"
