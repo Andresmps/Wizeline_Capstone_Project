@@ -55,9 +55,30 @@ def ingest_data_from_gcs(
         gcs_hook.download(
             bucket_name=gcs_bucket, object_name=gcs_object, filename=tmp.name
         )
+
+        user_purchase_df = pd.read_csv(tmp.name, sep=',')
+
         print(tmp.name)
-        print(pd.read_csv(tmp.name, sep=',').columns)
-        psql_hook.bulk_load(table=postgres_table, tmp_file=tmp.name)
+        print(user_purchase_df.columns)
+
+        file_name = '/tmp/user_purchase.csv'
+        user_purchase_df\
+            .rename(
+                columns={
+                    'InvoiceNo': 'invoice_number',
+                    'StockCode': 'stock_code',
+                    'Description': 'detail',
+                    'Quantity': 'quantity',
+                    'InvoiceDate': 'invoice_date',
+                    'UnitPrice': 'unit_price',
+                    'CustomerID': 'customer_id',
+                    'Country': 'country'
+                }
+            )\
+            .to_csv(file_name, index=False)
+
+        
+        psql_hook.bulk_load(table=postgres_table, tmp_file=file_name)
 
 
 with DAG(
