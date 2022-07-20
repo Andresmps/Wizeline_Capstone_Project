@@ -20,13 +20,13 @@ STABILITY_STATE = "unstable"
 CLOUD_PROVIDER = "gcp"
 
 # GCP constants
-GCP_CONN_ID = "google_cloud_default"
-GCS_BUCKET_NAME = "bootcamp-project-assets"
-GCS_KEY_NAME = "datasets/monthly-charts.csv"
+GCP_CONN_ID = "gcp_conn"
+GCS_BUCKET_NAME = "data-bootcamp-test-1-dev-data"
+GCS_KEY_NAME = "Raw/user_purchase.csv"
 
 # Postgres constants
-POSTGRES_CONN_ID = "ml_conn"
-POSTGRES_TABLE_NAME = "monthly_charts_data"
+POSTGRES_CONN_ID = "PostgresSQL"
+POSTGRES_TABLE_NAME = "user_purchase"
 
 
 def ingest_data_from_gcs(
@@ -76,17 +76,14 @@ with DAG(
         postgres_conn_id=POSTGRES_CONN_ID,
         sql=f"""
             CREATE TABLE IF NOT EXISTS {POSTGRES_TABLE_NAME} (
-                month VARCHAR(10),
-                position INTEGER,
-                artist VARCHAR(100),
-                song VARCHAR(100),
-                indicative_revenue NUMERIC,
-                us INTEGER,
-                uk INTEGER,
-                de INTEGER,
-                fr INTEGER,
-                ca INTEGER,
-                au INTEGER
+                invoice_number varchar(10),
+                stock_code varchar(20),
+                detail varchar(1000),
+                quantity int,
+                invoice_date timestamp,
+                unit_price numeric(8,3),
+                customer_id int,
+                country varchar(20)
             )
         """,
     )
