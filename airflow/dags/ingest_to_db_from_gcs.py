@@ -79,7 +79,7 @@ def ingest_data_from_gcs(
         print(user_purchase_df.shape)
         user_purchase_df.drop([0], axis=0, inplace=True)
         print(user_purchase_df.shape)
-        user_purchase_df.to_csv(file_name, index=False)
+        user_purchase_df.to_csv(file_name, sep='\t', index=False)
 
         
         psql_hook.bulk_load(table=postgres_table, tmp_file=file_name)
