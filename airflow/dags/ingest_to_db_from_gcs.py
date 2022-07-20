@@ -13,6 +13,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.trigger_rule import TriggerRule
+from pandas import pd
 
 # General constants
 DAG_ID = "gcp_database_ingestion_workflow"
@@ -54,6 +55,8 @@ def ingest_data_from_gcs(
         gcs_hook.download(
             bucket_name=gcs_bucket, object_name=gcs_object, filename=tmp.name
         )
+        print(tmp.name)
+        print(pd.read_csv(tmp.name, sep=',').columns)
         psql_hook.bulk_load(table=postgres_table, tmp_file=tmp.name)
 
 
