@@ -79,9 +79,22 @@ def ingest_data_from_gcs(
         print(user_purchase_df.shape)
         user_purchase_df.drop([0], axis=0, inplace=True)
         print(user_purchase_df.shape)
-        user_purchase_df.to_csv(file_name, sep='\t', index=False)
 
-        
+        user_purchase_df = user_purchase_df.dtype(
+            {
+                'invoice_number': str,
+                'stock_code': str,
+                'detail': str,
+                'quantity': int,
+                'invoice_date': str,
+                'unit_price': float,
+                'customer_id': int,
+                'country': str
+            }
+            
+        )
+
+        user_purchase_df.to_csv(file_name, sep='\t', index=False)
         psql_hook.bulk_load(table=postgres_table, tmp_file=file_name)
 
 
