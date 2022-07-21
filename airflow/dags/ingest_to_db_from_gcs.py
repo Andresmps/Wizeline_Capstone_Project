@@ -81,10 +81,10 @@ def ingest_data_from_gcs(
                 'invoice_number': str,
                 'stock_code': str,
                 'detail': str,
-                'quantity': int,
+                'quantity': float,
                 'invoice_date': str,
                 'unit_price': float,
-                'customer_id': int,
+                'customer_id': float,
                 'country': str
             }
             
