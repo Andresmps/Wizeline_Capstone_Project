@@ -76,19 +76,19 @@ def ingest_data_from_gcs(
         #         }
         #     )
 
-        # user_purchase_df = user_purchase_df.astype(
-        #     {
-        #         'invoice_number': str,
-        #         'stock_code': str,
-        #         'detail': str,
-        #         'quantity': float,
-        #         'invoice_date': str,
-        #         'unit_price': float,
-        #         'customer_id': float,
-        #         'country': str
-        #     }, errors='ignore'
+        user_purchase_df = user_purchase_df.astype(
+            {
+                # 'invoice_number': str,
+                # 'stock_code': str,
+                # 'detail': str,
+                # 'quantity': int,
+                # 'invoice_date': str,
+                # 'unit_price': float,
+                'customer_id': int,
+                # 'country': str
+            }, errors='ignore'
             
-        # )
+        )
 
         user_purchase_df.columns = user_purchase_df.iloc[0]
         print(user_purchase_df.shape)
