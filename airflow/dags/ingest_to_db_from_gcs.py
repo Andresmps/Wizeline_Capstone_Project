@@ -86,7 +86,7 @@ def ingest_data_from_gcs(
                 'unit_price': float,
                 'customer_id': float,
                 'country': str
-            }
+            }, errors='ignore'
             
         )
 
