@@ -62,37 +62,37 @@ def ingest_data_from_gcs(
         print(user_purchase_df.columns)
 
         file_name = '/tmp/user_purchase.csv'
-        user_purchase_df = user_purchase_df\
-            .rename(
-                columns={
-                    'InvoiceNo': 'invoice_number',
-                    'StockCode': 'stock_code',
-                    'Description': 'detail',
-                    'Quantity': 'quantity',
-                    'InvoiceDate': 'invoice_date',
-                    'UnitPrice': 'unit_price',
-                    'CustomerID': 'customer_id',
-                    'Country': 'country'
-                }
-            )
+        # user_purchase_df = user_purchase_df\
+        #     .rename(
+        #         columns={
+        #             'InvoiceNo': 'invoice_number',
+        #             'StockCode': 'stock_code',
+        #             'Description': 'detail',
+        #             'Quantity': 'quantity',
+        #             'InvoiceDate': 'invoice_date',
+        #             'UnitPrice': 'unit_price',
+        #             'CustomerID': 'customer_id',
+        #             'Country': 'country'
+        #         }
+        #     )
 
-        user_purchase_df = user_purchase_df.astype(
-            {
-                'invoice_number': str,
-                'stock_code': str,
-                'detail': str,
-                'quantity': float,
-                'invoice_date': str,
-                'unit_price': float,
-                'customer_id': float,
-                'country': str
-            }, errors='ignore'
+        # user_purchase_df = user_purchase_df.astype(
+        #     {
+        #         'invoice_number': str,
+        #         'stock_code': str,
+        #         'detail': str,
+        #         'quantity': float,
+        #         'invoice_date': str,
+        #         'unit_price': float,
+        #         'customer_id': float,
+        #         'country': str
+        #     }, errors='ignore'
             
-        )
+        # )
 
-        user_purchase_df.columns = user_purchase_df.iloc[0]
-        print(user_purchase_df.shape)
-        user_purchase_df.drop([0], axis=0, inplace=True)
+        # user_purchase_df.columns = user_purchase_df.iloc[0]
+        # print(user_purchase_df.shape)
+        # user_purchase_df.drop([0], axis=0, inplace=True)
         print(user_purchase_df.shape)
         print(user_purchase_df.columns)
 
@@ -120,7 +120,7 @@ with DAG(
         postgres_conn_id=POSTGRES_CONN_ID,
         sql=f"""
             CREATE TABLE IF NOT EXISTS {POSTGRES_TABLE_NAME} (
-                invoice_number varchar(10),
+                invoice_number varchar(20),
                 stock_code varchar(20),
                 detail varchar(1000),
                 quantity int,
