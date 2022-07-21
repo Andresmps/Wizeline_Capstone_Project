@@ -57,24 +57,24 @@ def ingest_data_from_gcs(
         )
 
         file_name = '/tmp/user_purchase.csv'
-        lines = []
+        # lines = []
 
-        with open(tmp.name, "r") as file:    
-            for line in file:
-                lines.append(line.replace(',', '\t'))
-            file.close()
+        # with open(tmp.name, "r") as file:    
+        #     for line in file:
+        #         lines.append(line.replace(',', '\t'))
+        #     file.close()
 
-        with open(file_name, "w") as file:
-            for line in lines[1:]:
-                file.write(line)
-                # file.write("\n")
+        # with open(file_name, "w") as file:
+        #     for line in lines[1:]:
+        #         file.write(line)
+        #         # file.write("\n")
                 
-            file.close()
+        #     file.close()
 
-        # user_purchase_df = pd.read_csv(tmp.name, sep=',')
+        user_purchase_df = pd.read_csv(tmp.name, sep=',')
 
-        # print(tmp.name)
-        # print(user_purchase_df.columns)
+        print(tmp.name)
+        print(user_purchase_df.columns)
 
         # user_purchase_df = user_purchase_df\
         #     .rename(
@@ -90,28 +90,31 @@ def ingest_data_from_gcs(
         #         }
         #     )
 
-        # user_purchase_df = user_purchase_df.astype(
-        #     {
-                # 'invoice_number': str,
-                # 'stock_code': str,
-                # 'detail': str,
-                # 'quantity': int,
-                # 'invoice_date': str,
-                # 'unit_price': float,
-                # 'CustomerID': 'Int64',
+        user_purchase_df = user_purchase_df.astype(
+            {
+            #     'invoice_number': str,
+            #     'stock_code': str,
+            #     'detail': str,
+            #     'quantity': int,
+            #     'invoice_date': str,
+            #     'unit_price': float,
+                'CustomerID': 'Int64',
                 # 'country': str
-            # }
+            }
             # , errors='ignore'
             
-        # )
+        )
 
-        # user_purchase_df.columns = user_purchase_df.iloc[0]
-        # print(user_purchase_df.shape)
-        # user_purchase_df.drop([0], axis=0, inplace=True)
-        # print(user_purchase_df.shape)
-        # print(user_purchase_df.columns)
+        # user_purchase_df.Description = user_purchase_df.Description.fillna("")
+        user_purchase_df.CustomerID = user_purchase_df.CustomerID.fillna(-1)
 
-        # user_purchase_df.to_csv(file_name, sep='\t', index=False)
+        user_purchase_df.columns = user_purchase_df.iloc[0]
+        print(user_purchase_df.shape)
+        user_purchase_df.drop([0], axis=0, inplace=True)
+        print(user_purchase_df.shape)
+        print(user_purchase_df.columns)
+
+        user_purchase_df.to_csv(file_name, sep='\t', index=False)
 
 
         psql_hook.bulk_load(table=postgres_table, tmp_file=file_name)
