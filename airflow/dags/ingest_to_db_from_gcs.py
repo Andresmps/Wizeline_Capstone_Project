@@ -75,9 +75,9 @@ def ingest_data_from_gcs(
                     'Country': 'country'
                 }
             )
-        user_purchase_df.columns = user_purchase_df.iloc[0]
-        print(user_purchase_df.shape)
-        user_purchase_df.drop([0], axis=0, inplace=True)
+        # user_purchase_df.columns = user_purchase_df.iloc[0]
+        # print(user_purchase_df.shape)
+        # user_purchase_df.drop([0], axis=0, inplace=True)
         print(user_purchase_df.shape)
         print(user_purchase_df.columns)
 
