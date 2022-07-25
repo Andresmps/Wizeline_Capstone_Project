@@ -10,7 +10,7 @@ from airflow.providers.google.cloud.operators.dataproc import (
 from airflow.utils.trigger_rule import TriggerRule
 
 ENV_ID = "dev"
-DAG_ID = "dataproc_hive"
+DAG_ID = "dataproc_creation"
 PROJECT_ID = "dataengbootcamp"
 CLUSTER_NAME = f"cluster-dataproc-hive-{ENV_ID}"
 REGION = "us-central1"
@@ -19,7 +19,7 @@ ZONE = "us-central1-a"
 BUCKET_NAME = "data-bootcamp-test-1-dev-data"
 INIT_FILE = "Data_proc_scripts/pip-install.sh"
 PYSPARK_FILE = "Data_proc_scripts/clean_data.py"
-
+GCP_CONN_ID = "gcp_conn"
 
 # Cluster definition
 # [START how_to_cloud_dataproc_create_cluster]
@@ -69,25 +69,31 @@ with models.DAG(
         cluster_config=CLUSTER_CONFIG,
         region=REGION,
         cluster_name=CLUSTER_NAME,
+        gcp_conn_id=GCP_CONN_ID
 
     )
     # [END how_to_cloud_dataproc_create_cluster_operator]
 
     pyspark_task = DataprocSubmitJobOperator(
-        task_id="pyspark_task", job=PYSPARK_JOB, region=REGION, project_id=PROJECT_ID
+        task_id="pyspark_task",
+        job=PYSPARK_JOB,
+        region=REGION,
+         project_id=PROJECT_ID,
+        gcp_conn_id=GCP_CONN_ID
     )
 
     # [START how_to_cloud_dataproc_delete_cluster_operator]
-    delete_cluster = DataprocDeleteClusterOperator(
-        task_id="delete_cluster",
-        project_id=PROJECT_ID,
-        cluster_name=CLUSTER_NAME,
-        region=REGION,
-    )
+    # delete_cluster = DataprocDeleteClusterOperator(
+    #     task_id="delete_cluster",
+    #     project_id=PROJECT_ID,
+    #     cluster_name=CLUSTER_NAME,
+    #     region=REGION,
+    # )
     # [END how_to_cloud_dataproc_delete_cluster_operator]
-    delete_cluster.trigger_rule = TriggerRule.ALL_DONE
+    # delete_cluster.trigger_rule = TriggerRule.ALL_DONE
 
-    create_cluster >> pyspark_task >> delete_cluster
+    create_cluster >> pyspark_task
+    #  >> delete_cluster
 
 
 
