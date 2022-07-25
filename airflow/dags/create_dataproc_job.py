@@ -12,7 +12,7 @@ from airflow.utils.trigger_rule import TriggerRule
 ENV_ID = "dev"
 DAG_ID = "dataproc_creation"
 PROJECT_ID = "dataengbootcamp"
-CLUSTER_NAME = f"cluster-dataproc-hive-{ENV_ID}"
+CLUSTER_NAME = f"cluster-dataproc-pyspark-{ENV_ID}"
 REGION = "us-central1"
 ZONE = "us-central1-a"
 
@@ -37,12 +37,19 @@ CLUSTER_CONFIG = {
         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 1024},
 
     },
-    "metadata": {
-        "PIP_PACKAGES": "pg8000 joblib sqlalchemy nltk "
+    "gceClusterConfig":{
+        "metadata": {
+            "PIP_PACKAGES": "pg8000 joblib sqlalchemy nltk "
+        }
     },
-    "init_actions_uris": [
-        f"gs://{BUCKET_NAME}/{INIT_FILE}"
-    ]
+    "softwareConfig": {
+        "properties": {
+            "spark": "spark:spark.jars.packages=com.databricks:spark-xml_2.11:0.4.1"
+        }
+    },
+    "initializationActions": {
+        "executableFile": f"gs://{BUCKET_NAME}/{INIT_FILE}"
+    }
 }
 
 TIMEOUT = {"seconds": 1 * 24 * 60 * 60}
