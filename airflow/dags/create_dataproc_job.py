@@ -26,7 +26,7 @@ GCP_CONN_ID = "gcp_conn"
 
 
 CLUSTER_CONFIG = {
-    "gce_cluster_config ":{
+    "gce_cluster_config":{
         "metadata": {
             "PIP_PACKAGES": "pg8000 joblib sqlalchemy nltk "
         }
