@@ -44,7 +44,7 @@ CLUSTER_CONFIG = {
     },
     "software_config": {
         "properties": {
-            "spark": "spark:spark.jars.packages=com.databricks:spark-xml_2.11:0.4.1"
+            "spark:spark.jars.packages": "com.databricks:spark-xml_2.11:0.4.1"
         }
     },
     "initialization_actions": [
