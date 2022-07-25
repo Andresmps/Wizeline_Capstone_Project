@@ -18,6 +18,7 @@ ZONE = "us-central1-a"
 
 BUCKET_NAME = "data-bootcamp-test-1-dev-data"
 INIT_FILE = "Data_proc_scripts/pip-install.sh"
+PYSPARK_FILE = "Data_proc_scripts/clean_data.py"
 
 
 # Cluster definition
