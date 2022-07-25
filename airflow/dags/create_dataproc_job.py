@@ -26,6 +26,11 @@ GCP_CONN_ID = "gcp_conn"
 
 
 CLUSTER_CONFIG = {
+    "gce_cluster_config ":{
+        "metadata": {
+            "PIP_PACKAGES": "pg8000 joblib sqlalchemy nltk "
+        }
+    },
     "master_config": {
         "num_instances": 1,
         "machine_type_uri": "n1-standard-4",
@@ -37,18 +42,13 @@ CLUSTER_CONFIG = {
         "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 1024},
 
     },
-    "gceClusterConfig":{
-        "metadata": {
-            "PIP_PACKAGES": "pg8000 joblib sqlalchemy nltk "
-        }
-    },
-    "softwareConfig": {
+    "software_config": {
         "properties": {
             "spark": "spark:spark.jars.packages=com.databricks:spark-xml_2.11:0.4.1"
         }
     },
-    "initializationActions": {
-        "executableFile": f"gs://{BUCKET_NAME}/{INIT_FILE}"
+    "initialization_actions": {
+        "executable_file": f"gs://{BUCKET_NAME}/{INIT_FILE}"
     }
 }
 
