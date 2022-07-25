@@ -47,9 +47,11 @@ CLUSTER_CONFIG = {
             "spark": "spark:spark.jars.packages=com.databricks:spark-xml_2.11:0.4.1"
         }
     },
-    "initialization_actions": {
-        "executable_file": f"gs://{BUCKET_NAME}/{INIT_FILE}"
-    }
+    "initialization_actions": [
+        {
+            "executable_file": f"gs://{BUCKET_NAME}/{INIT_FILE}"
+        }
+    ]
 }
 
 TIMEOUT = {"seconds": 1 * 24 * 60 * 60}
