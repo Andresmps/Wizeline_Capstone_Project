@@ -98,7 +98,7 @@ with models.DAG(
         cluster_name=CLUSTER_NAME,
         region=REGION,
         gcp_conn_id=GCP_CONN_ID
-    # )
+    )
     # [END how_to_cloud_dataproc_delete_cluster_operator]
     delete_cluster.trigger_rule = TriggerRule.ALL_DONE
 
