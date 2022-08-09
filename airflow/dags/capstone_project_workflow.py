@@ -247,14 +247,14 @@ with DAG(
     )
 
     # [START how_to_cloud_dataproc_delete_cluster_operator]
-    delete_cluster = DataprocDeleteClusterOperator(
-        task_id="delete_dataproc_cluster",
-        project_id=PROJECT_ID,
-        cluster_name=CLUSTER_NAME,
-        region=REGION,
-        gcp_conn_id=GCP_CONN_ID,
-        trigger_rule=TriggerRule.ALL_DONE
-    )
+    # delete_cluster = DataprocDeleteClusterOperator(
+    #     task_id="delete_dataproc_cluster",
+    #     project_id=PROJECT_ID,
+    #     cluster_name=CLUSTER_NAME,
+    #     region=REGION,
+    #     gcp_conn_id=GCP_CONN_ID,
+    #     trigger_rule=TriggerRule.ALL_DONE
+    # )
 
 
     (
