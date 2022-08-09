@@ -1,4 +1,3 @@
-from Wizeline_Capstone_Project.airflow.pyspark_scripts.agg_data import BUCKET_NAME
 from airflow.models import DAG
 
 from airflow.operators.dummy import DummyOperator
@@ -58,8 +57,8 @@ GCS_PYSPARK_AGG_KEY = "Data_proc_scripts/agg_data.py"
 GCS_OBT_KEY = "Final/obt_table/"
 GCS_OBT_NESTED_KEY = "Final/obt_nested_table/"
 
-GCS_OBT_SCHEMA = F"gs://{BUCKET_NAME}/Others/obt_schema_bigquery.json"
-GCS_OBT_NESTED_SCHEMA = F"gs://{BUCKET_NAME}/Others/obt_nested_schema_bigquery.json"
+GCS_OBT_SCHEMA = F"gs://{GCS_BUCKET_NAME}/Others/obt_schema_bigquery.json"
+GCS_OBT_NESTED_SCHEMA = F"gs://{GCS_BUCKET_NAME}/Others/obt_nested_schema_bigquery.json"
 
 # Connections
 GCP_CONN_ID = "gcp_conn"
@@ -298,7 +297,7 @@ with DAG(
 
     load_obt_table = GCSToBigQueryOperator(
         task_id='gcs_obt_parquet_to_bigquery',
-        bucket=BUCKET_NAME,
+        bucket=GCS_BUCKET_NAME,
         source_objects=[GCS_OBT_KEY],
         destination_project_dataset_table=f"{DATASET_NAME}.{OBT_TABLE_NAME}",
         # schema_fields=GCS_OBT_SCHEMA
