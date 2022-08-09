@@ -165,6 +165,6 @@ with DAG(
             clear_table,
             continue_process
         ]
-        >> ingest_data
+        >> ingest_user_purchase_data
         >> end_workflow
     )
