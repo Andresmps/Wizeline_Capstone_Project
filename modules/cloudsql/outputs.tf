@@ -10,6 +10,10 @@ output "database_connection" {
   value = google_sql_database.database.self_link
 }
 
-output "database" {
+output "database_name" {
   value = google_sql_database.database.id
+}
+
+output "database_name_data" {
+  value = google_sql_database.database_data.id
 }

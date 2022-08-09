@@ -9,6 +9,10 @@ variable "region" {
   description = "region"
 }
 
+variable "env" {
+  default     = "dev"
+  description = "environment"
+}
 
 #GKE
 variable "gke_num_nodes" {
@@ -17,7 +21,7 @@ variable "gke_num_nodes" {
 }
 
 variable "machine_type" {
-  type = string
+  type    = string
   default = "n1-standard-1"
 }
 
@@ -43,7 +47,7 @@ variable "disk_space" {
 }
 
 variable "database_name" {
-  description = "Name for the database to be created"
+  description = "Name for the database to be created for airflow"
   default     = "dbname"
 }
 
