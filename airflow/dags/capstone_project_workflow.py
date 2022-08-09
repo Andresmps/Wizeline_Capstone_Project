@@ -292,8 +292,8 @@ with DAG(
         # google_cloud_default=GCP_CONN_ID,
         # bigquery_conn_id=BIGQUERY_CONN_ID,
         time_partitioning={
-            "type": "DAY",
-            "field": "insert_date"
+            "time_partitioning_type": "DAY",
+            "time_partitioning_field": "insert_date"
         }
     )
 
