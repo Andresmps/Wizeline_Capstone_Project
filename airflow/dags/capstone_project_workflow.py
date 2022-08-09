@@ -291,10 +291,10 @@ with DAG(
         gcs_schema_object=GCS_OBT_SCHEMA,
         # google_cloud_default=GCP_CONN_ID,
         # bigquery_conn_id=BIGQUERY_CONN_ID,
-        time_partitioning={
-            "time_partitioning_type": "DAY",
-            "time_partitioning_field": "insert_date"
-        }
+        # time_partitioning={
+        #     "time_partitioning_type": "DAY",
+        #     "time_partitioning_field": "insert_date"
+        # }
     )
 
     load_obt_table = GCSToBigQueryOperator(
@@ -305,10 +305,10 @@ with DAG(
         # schema_fields=GCS_OBT_SCHEMA
         source_format="PARQUET",
         autodetect=True,
-        time_partitioning={
-            "time_partitioning_type": "DAY",
-            "time_partitioning_field": "insert_date"
-        },
+        # time_partitioning={
+        #     "time_partitioning_type": "DAY",
+        #     "time_partitioning_field": "insert_date"
+        # },
         write_disposition='WRITE_TRUNCATE',
         gcp_conn_id=GCP_CONN_ID
     )
