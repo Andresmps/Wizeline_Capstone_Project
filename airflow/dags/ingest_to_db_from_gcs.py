@@ -13,20 +13,22 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.utils.dates import days_ago
 from airflow.utils.trigger_rule import TriggerRule
+import pandas as pd
 
 # General constants
 DAG_ID = "gcp_database_ingestion_workflow"
 STABILITY_STATE = "unstable"
 CLOUD_PROVIDER = "gcp"
+API_VERSION = "V1"
 
 # GCP constants
-GCP_CONN_ID = "google_cloud_default"
-GCS_BUCKET_NAME = "bootcamp-project-assets"
-GCS_KEY_NAME = "datasets/monthly-charts.csv"
+GCP_CONN_ID = "gcp_conn"
+GCS_BUCKET_NAME = "data-bootcamp-test-1-dev-data"
+GCS_KEY_NAME = "Raw/user_purchase.csv"
 
 # Postgres constants
-POSTGRES_CONN_ID = "ml_conn"
-POSTGRES_TABLE_NAME = "monthly_charts_data"
+POSTGRES_CONN_ID = "PostgresSQL"
+POSTGRES_TABLE_NAME = "user_purchase"
 
 
 def ingest_data_from_gcs(
@@ -53,7 +55,69 @@ def ingest_data_from_gcs(
         gcs_hook.download(
             bucket_name=gcs_bucket, object_name=gcs_object, filename=tmp.name
         )
-        psql_hook.bulk_load(table=postgres_table, tmp_file=tmp.name)
+
+        file_name = '/tmp/user_purchase.csv'
+        # lines = []
+
+        # with open(tmp.name, "r") as file:    
+        #     for line in file:
+        #         lines.append(line.replace(',', '\t'))
+        #     file.close()
+
+        # with open(file_name, "w") as file:
+        #     for line in lines[1:]:
+        #         file.write(line)
+        #         # file.write("\n")
+                
+        #     file.close()
+
+        user_purchase_df = pd.read_csv(tmp.name, sep=',')
+
+        print(tmp.name)
+        print(user_purchase_df.columns)
+
+        # user_purchase_df = user_purchase_df\
+        #     .rename(
+        #         columns={
+        #             'InvoiceNo': 'invoice_number',
+        #             'StockCode': 'stock_code',
+        #             'Description': 'detail',
+        #             'Quantity': 'quantity',
+        #             'InvoiceDate': 'invoice_date',
+        #             'UnitPrice': 'unit_price',
+        #             'CustomerID': 'customer_id',
+        #             'Country': 'country'
+        #         }
+        #     )
+
+        user_purchase_df = user_purchase_df.astype(
+            {
+            #     'invoice_number': str,
+            #     'stock_code': str,
+            #     'detail': str,
+            #     'quantity': int,
+            #     'invoice_date': str,
+            #     'unit_price': float,
+                'CustomerID': 'Int64',
+                # 'country': str
+            }
+            # , errors='ignore'
+            
+        )
+
+        # user_purchase_df.Description = user_purchase_df.Description.fillna("")
+        user_purchase_df.CustomerID = user_purchase_df.CustomerID.fillna(-1)
+
+        user_purchase_df.columns = user_purchase_df.iloc[0]
+        print(user_purchase_df.shape)
+        user_purchase_df.drop([0], axis=0, inplace=True)
+        print(user_purchase_df.shape)
+        print(user_purchase_df.columns)
+
+        user_purchase_df.to_csv(file_name, sep='\t', index=False)
+
+
+        psql_hook.bulk_load(table=postgres_table, tmp_file=file_name)
 
 
 with DAG(
@@ -76,17 +140,14 @@ with DAG(
         postgres_conn_id=POSTGRES_CONN_ID,
         sql=f"""
             CREATE TABLE IF NOT EXISTS {POSTGRES_TABLE_NAME} (
-                month VARCHAR(10),
-                position INTEGER,
-                artist VARCHAR(100),
-                song VARCHAR(100),
-                indicative_revenue NUMERIC,
-                us INTEGER,
-                uk INTEGER,
-                de INTEGER,
-                fr INTEGER,
-                ca INTEGER,
-                au INTEGER
+                invoice_number varchar(20),
+                stock_code varchar(20),
+                detail varchar(1000),
+                quantity int,
+                invoice_date timestamp,
+                unit_price numeric(8,3),
+                customer_id int,
+                country varchar(20)
             )
         """,
     )
@@ -117,6 +178,7 @@ with DAG(
         sql=f"SELECT COUNT(*) AS total_rows FROM {POSTGRES_TABLE_NAME}",
         follow_task_ids_if_false=[continue_process.task_id],
         follow_task_ids_if_true=[clear_table.task_id],
+        # op_kwargs={'api_version':API_VERSION}
     )
 
     end_workflow = DummyOperator(task_id="end_workflow")
