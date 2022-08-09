@@ -288,7 +288,7 @@ with DAG(
         dataset_id=DATASET_NAME,
         table_id=OBT_TABLE_NAME,
         gcs_schema_object=GCS_OBT_SCHEMA,
-        gcp_conn_id=GCP_CONN_ID,
+        # gcp_conn_id=GCP_CONN_ID,
         # time_partitioning={
         #     "type": "DAY",
         #     "field": "insert_date"
