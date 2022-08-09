@@ -105,10 +105,10 @@ def denormalize_db():
                         F.col("region"),
                     ).alias('location_info'),
                     F.struct(
-                        F.col("logDate").alias('log_date'),
-                        F.dayofmonth(F.to_date('logDate',  'MM-dd-yyyy')).alias('day'),
-                        F.month(F.to_date('logDate',  'MM-dd-yyyy')).alias('month'),
-                        F.year(F.to_date('logDate',  'MM-dd-yyyy')).alias('year'),
+                        F.col("log_date").alias('log_date'),
+                        F.dayofmonth(F.to_date('log_date',  'MM-dd-yyyy')).alias('day'),
+                        F.month(F.to_date('log_date',  'MM-dd-yyyy')).alias('month'),
+                        F.year(F.to_date('log_date',  'MM-dd-yyyy')).alias('year'),
                         F.col('season')
                     ).alias('log_date_info'),
                     F.col("device"),

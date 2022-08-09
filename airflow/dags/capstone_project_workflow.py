@@ -1,3 +1,4 @@
+from Wizeline_Capstone_Project.airflow.pyspark_scripts.agg_data import BUCKET_NAME
 from airflow.models import DAG
 
 from airflow.operators.dummy import DummyOperator
@@ -5,6 +6,7 @@ from airflow.operators.python import PythonOperator
 from airflow.operators.sql import BranchSQLOperator
 
 from airflow.providers.google.cloud.transfers.gcs_to_gcs import GCSToGCSOperator
+from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 
@@ -16,6 +18,14 @@ from airflow.providers.google.cloud.operators.dataproc import (
     DataprocDeleteClusterOperator,
     DataprocSubmitJobOperator,
 )
+
+from airflow.providers.google.cloud.operators.bigquery import (
+    BigQueryCreateEmptyDatasetOperator,
+    BigQueryCreateEmptyTableOperator,
+    BigQueryUpdateTableOperator,
+)
+
+
 
 from airflow.utils.dates import days_ago
 # from datetime import datetime
@@ -29,7 +39,7 @@ CLUSTER_NAME = f"cluster-dataproc-pyspark-{ENV}"
 REGION = "us-central1"
 ZONE = "us-central1-a"
 
-DAG_ID = f"gcp_capstone_project_{ENV}_workflow"
+DAG_ID = f"capstone_project_gcp_{ENV}_workflow"
 CLOUD_PROVIDER = "gcp"
 API_VERSION = "V0.1"
 
@@ -45,6 +55,11 @@ GCS_RAW_ZONE = F"gs://{GCS_BUCKET_NAME}/Raw/"
 GCS_INIT_FILE_KEY = "Data_proc_scripts/pip-install.sh"
 GCS_PYSPARK_CLEANING_KEY = "Data_proc_scripts/clean_data.py"
 GCS_PYSPARK_AGG_KEY = "Data_proc_scripts/agg_data.py"
+GCS_OBT_KEY = "Final/obt_table/"
+GCS_OBT_NESTED_KEY = "Final/obt_nested_table/"
+
+GCS_OBT_SCHEMA = F"gs://{BUCKET_NAME}/Others/obt_schema_bigquery.json"
+GCS_OBT_NESTED_SCHEMA = F"gs://{BUCKET_NAME}/Others/obt_nested_schema_bigquery.json"
 
 # Connections
 GCP_CONN_ID = "gcp_conn"
@@ -52,6 +67,11 @@ GCP_CONN_ID = "gcp_conn"
 # Postgres constants
 POSTGRES_CONN_ID = "postgres_conn"
 POSTGRES_TABLE_NAME = "user_purchase"
+
+# Bigquery config
+DATASET_NAME = f"movie_analytics_{ENV}"
+OBT_TABLE_NAME = "movie_analytics_obt"
+OBT_NESTED_TABLE_NAME = "movie_analytics_obt_nested"
 
 # Cluster config
 CLUSTER_CONFIG = {
@@ -218,33 +238,33 @@ with DAG(
     #     trigger_rule=TriggerRule.ONE_SUCCESS
     # )
 
-    create_cluster = DataprocCreateClusterOperator(
-        task_id="create_dataproc_cluster",
-        project_id=PROJECT_ID,
-        cluster_config=CLUSTER_CONFIG,
-        region=REGION,
-        cluster_name=CLUSTER_NAME,
-        gcp_conn_id=GCP_CONN_ID,
-        trigger_rule=TriggerRule.ALL_SUCCESS
+    # create_cluster = DataprocCreateClusterOperator(
+    #     task_id="create_dataproc_cluster",
+    #     project_id=PROJECT_ID,
+    #     cluster_config=CLUSTER_CONFIG,
+    #     region=REGION,
+    #     cluster_name=CLUSTER_NAME,
+    #     gcp_conn_id=GCP_CONN_ID,
+    #     trigger_rule=TriggerRule.ALL_SUCCESS
 
-    )
-    # [END how_to_cloud_dataproc_create_cluster_operator]
+    # )
+    # # [END how_to_cloud_dataproc_create_cluster_operator]
 
-    pyspark_cleaning_task = DataprocSubmitJobOperator(
-        task_id="pyspark_cleaning_task",
-        job=PYSPARK_CLEANING_JOB,
-        region=REGION,
-         project_id=PROJECT_ID,
-        gcp_conn_id=GCP_CONN_ID
-    )
+    # pyspark_cleaning_task = DataprocSubmitJobOperator(
+    #     task_id="pyspark_cleaning_task",
+    #     job=PYSPARK_CLEANING_JOB,
+    #     region=REGION,
+    #      project_id=PROJECT_ID,
+    #     gcp_conn_id=GCP_CONN_ID
+    # )
 
-    pyspark_agg_task = DataprocSubmitJobOperator(
-        task_id="pyspark_agg_task",
-        job=PYSPARK_CLEANING_JOB,
-        region=REGION,
-         project_id=PROJECT_ID,
-        gcp_conn_id=GCP_CONN_ID
-    )
+    # pyspark_agg_task = DataprocSubmitJobOperator(
+    #     task_id="pyspark_agg_task",
+    #     job=PYSPARK_CLEANING_JOB,
+    #     region=REGION,
+    #      project_id=PROJECT_ID,
+    #     gcp_conn_id=GCP_CONN_ID
+    # )
 
  
     # [START how_to_cloud_dataproc_delete_cluster_operator]
@@ -257,8 +277,50 @@ with DAG(
     #     trigger_rule=TriggerRule.ALL_DONE
     # )
 
+    create_dataset = BigQueryCreateEmptyDatasetOperator(
+        task_id="create_movie_analytics_dataset",
+        dataset_id=DATASET_NAME,
+        gcp_conn_id=GCP_CONN_ID,
+        trigger_rule=TriggerRule.ALL_SUCCESS
+    )
+
+    create_obt_table = BigQueryCreateEmptyTableOperator(
+        task_id="create_empty_obt_table",
+        dataset_id=DATASET_NAME,
+        table_id=OBT_TABLE_NAME,
+        gcp_conn_id=GCP_CONN_ID,
+        gcs_schema_object=GCS_OBT_SCHEMA,
+        time_partitioning={
+            "type": "DAY",
+            "field": "insert_date"
+        }
+    )
+
+    load_obt_table = GCSToBigQueryOperator(
+        task_id='gcs_obt_parquet_to_bigquery',
+        bucket=BUCKET_NAME,
+        source_objects=[GCS_OBT_KEY],
+        destination_project_dataset_table=f"{DATASET_NAME}.{OBT_TABLE_NAME}",
+        # schema_fields=GCS_OBT_SCHEMA
+        source_format="PARQUET",
+        autodetect=True,
+        time_partitioning={
+            "type": "DAY",
+            "field": "insert_date"
+        },
+        write_disposition='WRITE_TRUNCATE',
+        gcp_conn_id=GCP_CONN_ID
+    )
+
+    # create_obt_nested_table = BigQueryCreateEmptyTableOperator(
+    #     task_id="create_empty_obt_nested_table",
+    #     dataset_id=DATASET_NAME,
+    #     table_id=OBT_NESTED_TABLE_NAME,
+    #     gcs_schema_object=GCS_OBT_NESTED_SCHEMA,
+    # )
+
     end_workflow = DummyOperator(task_id="end_workflow")
-    
+
     # (
     #     start_workflow
     #     >> [
@@ -285,10 +347,17 @@ with DAG(
 
     # (
     #     [ingest_user_purchase_data, copy_gcs_movie_review_to_gcs]
+    # (
+    #     create_cluster
+    #     >> pyspark_cleaning_task
+    #     >> pyspark_agg_task
+    #     >> delete_cluster
+    # )
+
     (
-        create_cluster
-        >> pyspark_cleaning_task
-        >> pyspark_agg_task
+        create_dataset
+        >> create_obt_table
+        >> load_obt_table
         # >> delete_cluster
         >> end_workflow
     )
