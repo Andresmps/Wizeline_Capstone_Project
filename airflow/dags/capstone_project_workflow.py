@@ -11,6 +11,11 @@ from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
+from airflow.providers.google.cloud.operators.dataproc import (
+    DataprocCreateClusterOperator,
+    DataprocDeleteClusterOperator,
+)
+
 from airflow.utils.dates import days_ago
 # from datetime import datetime
 from airflow.utils.trigger_rule import TriggerRule
@@ -97,13 +102,13 @@ with DAG(
         postgres_conn_id=POSTGRES_CONN_ID,
         sql=f"""
             CREATE TABLE IF NOT EXISTS {POSTGRES_TABLE_NAME} (
-                customer_id int,
                 invoice_number varchar(20),
                 stock_code varchar(20),
                 detail varchar(1000),
                 quantity int,
                 invoice_date timestamp,
                 unit_price numeric(8,3),
+                customer_id int,
                 country varchar(20)
             )
         """,
