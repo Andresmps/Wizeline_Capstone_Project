@@ -62,6 +62,7 @@ GCS_OBT_NESTED_SCHEMA = F"gs://{GCS_BUCKET_NAME}/Others/obt_nested_schema_bigque
 
 # Connections
 GCP_CONN_ID = "gcp_conn"
+BIGQUERY_CONN_ID = "bigquery_conn"
 
 # Postgres constants
 POSTGRES_CONN_ID = "postgres_conn"
@@ -289,12 +290,10 @@ with DAG(
         table_id=OBT_TABLE_NAME,
         gcs_schema_object=GCS_OBT_SCHEMA,
         # google_cloud_default=GCP_CONN_ID,
+        bigquery_conn_id=BIGQUERY_CONN_ID,
         time_partitioning={
             "type": "DAY",
             "field": "insert_date"
-        },
-        op_kwargs={
-            "gcp_conn_id": GCP_CONN_ID,
         }
     )
 
