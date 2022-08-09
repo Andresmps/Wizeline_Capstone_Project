@@ -267,7 +267,7 @@ with DAG(
     )
 
  
-    [START how_to_cloud_dataproc_delete_cluster_operator]
+    # [START how_to_cloud_dataproc_delete_cluster_operator]
     delete_cluster = DataprocDeleteClusterOperator(
         task_id="delete_dataproc_cluster",
         project_id=PROJECT_ID,
