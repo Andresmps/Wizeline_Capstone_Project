@@ -288,10 +288,13 @@ with DAG(
         dataset_id=DATASET_NAME,
         table_id=OBT_TABLE_NAME,
         gcs_schema_object=GCS_OBT_SCHEMA,
-        google_cloud_default=GCP_CONN_ID,
+        # google_cloud_default=GCP_CONN_ID,
         time_partitioning={
             "type": "DAY",
             "field": "insert_date"
+        }
+        op_kwargs={
+            "gcp_conn_id": GCP_CONN_ID,
         }
     )
 
