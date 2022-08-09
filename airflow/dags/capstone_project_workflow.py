@@ -290,7 +290,7 @@ with DAG(
         table_id=OBT_TABLE_NAME,
         gcs_schema_object=GCS_OBT_SCHEMA,
         # google_cloud_default=GCP_CONN_ID,
-        bigquery_conn_id=BIGQUERY_CONN_ID,
+        # bigquery_conn_id=BIGQUERY_CONN_ID,
         time_partitioning={
             "type": "DAY",
             "field": "insert_date"
