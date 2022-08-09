@@ -292,7 +292,7 @@ with DAG(
         time_partitioning={
             "type": "DAY",
             "field": "insert_date"
-        }
+        },
         op_kwargs={
             "gcp_conn_id": GCP_CONN_ID,
         }
