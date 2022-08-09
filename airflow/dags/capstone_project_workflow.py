@@ -11,12 +11,24 @@ from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 
+from airflow.providers.google.cloud.operators.dataproc import (
+    DataprocCreateClusterOperator,
+    DataprocDeleteClusterOperator,
+    DataprocSubmitJobOperator,
+)
+
 from airflow.utils.dates import days_ago
 # from datetime import datetime
 from airflow.utils.trigger_rule import TriggerRule
 
 # General constants
 ENV = "dev"
+PROJECT_ID = "dataengbootcamp"
+
+CLUSTER_NAME = f"cluster-dataproc-pyspark-{ENV}"
+REGION = "us-central1"
+ZONE = "us-central1-a"
+
 DAG_ID = f"gcp_capstone_project_{ENV}_workflow"
 CLOUD_PROVIDER = "gcp"
 API_VERSION = "V0.1"
@@ -29,6 +41,10 @@ GCS_USER_PURCHASE_KEY = "GDrive/user_purchase.csv"
 GCS_MOVIE_REVIEW_KEY = "GDrive/movie_review.csv"
 GCS_LOG_REVIEW_KEY = "GDrive/log_reviews.csv"
 GCS_RAW_ZONE = F"gs://{GCS_BUCKET_NAME}/Raw/"
+
+GCS_INIT_FILE_KEY = "Data_proc_scripts/pip-install.sh"
+GCS_PYSPARK_CLEANING_KEY = "Data_proc_scripts/clean_data.py"
+GCS_PYSPARK_AGG_KEY = "Data_proc_scripts/agg_data.py"
 
 # Connections
 GCP_CONN_ID = "gcp_conn"
@@ -56,7 +72,7 @@ def ingest_data_from_gcs(
         )
 
         user_purchase_df = pd.read_csv(tmp.name, sep=',')
-        user_purchase_df = user_purchase_df.CustomerID.astype(int).fillna(-1)
+        user_purchase_df.CustomerID = user_purchase_df.CustomerID.astype("Int64").fillna(-1)
         user_purchase_df.to_csv(tmp.name, header=False, sep='\t', index=False)
 
         psql_hook.bulk_load(table=postgres_table, tmp_file=tmp.name)
@@ -97,13 +113,13 @@ with DAG(
         postgres_conn_id=POSTGRES_CONN_ID,
         sql=f"""
             CREATE TABLE IF NOT EXISTS {POSTGRES_TABLE_NAME} (
-                customer_id int,
                 invoice_number varchar(20),
                 stock_code varchar(20),
                 detail varchar(1000),
                 quantity int,
                 invoice_date timestamp,
                 unit_price numeric(8,3),
+                customer_id int,
                 country varchar(20)
             )
         """,
@@ -117,6 +133,7 @@ with DAG(
             GCS_MOVIE_REVIEW_KEY, GCS_LOG_REVIEW_KEY
         ],
         destination_object=GCS_RAW_ZONE,
+        gcp_conn_id=GCP_CONN_ID,
         trigger_rule=TriggerRule.ALL_SUCCESS
     )
 

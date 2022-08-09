@@ -1,17 +1,5 @@
-import sqlalchemy
-import joblib
-import pg8000
-import os
-import re
-
-from datetime import datetime
-
-from pyspark.sql import DataFrame, SparkSession 
-from pyspark.ml.feature import Tokenizer, StopWordsRemover
-from pyspark.sql.window import Window
+from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
-
-from google.cloud import storage
 
 # GCS paths
 ENV = "dev"
