@@ -14,6 +14,7 @@ from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.google.cloud.operators.dataproc import (
     DataprocCreateClusterOperator,
     DataprocDeleteClusterOperator,
+    DataprocSubmitJobOperator,
 )
 
 from airflow.utils.dates import days_ago
@@ -22,6 +23,12 @@ from airflow.utils.trigger_rule import TriggerRule
 
 # General constants
 ENV = "dev"
+PROJECT_ID = "dataengbootcamp"
+
+CLUSTER_NAME = f"cluster-dataproc-pyspark-{ENV}"
+REGION = "us-central1"
+ZONE = "us-central1-a"
+
 DAG_ID = f"gcp_capstone_project_{ENV}_workflow"
 CLOUD_PROVIDER = "gcp"
 API_VERSION = "V0.1"
@@ -34,6 +41,10 @@ GCS_USER_PURCHASE_KEY = "GDrive/user_purchase.csv"
 GCS_MOVIE_REVIEW_KEY = "GDrive/movie_review.csv"
 GCS_LOG_REVIEW_KEY = "GDrive/log_reviews.csv"
 GCS_RAW_ZONE = F"gs://{GCS_BUCKET_NAME}/Raw/"
+
+GCS_INIT_FILE_KEY = "Data_proc_scripts/pip-install.sh"
+GCS_PYSPARK_CLEANING_KEY = "Data_proc_scripts/clean_data.py"
+GCS_PYSPARK_AGG_KEY = "Data_proc_scripts/agg_data.py"
 
 # Connections
 GCP_CONN_ID = "gcp_conn"

@@ -13,7 +13,7 @@ dags:
   gitSync:
     enabled: true
     repo: https://github.com/Andresmps/Wizeline_Capstone_Project
-    branch: main
+    branch: dev
     rev: HEAD
     depth: 1
     # the number of consecutive failures allowed before aborting
