@@ -57,8 +57,16 @@ def ingest_data_from_gcs(
 
         user_purchase_df = pd.read_csv(tmp.name, sep=',')
         user_purchase_df = user_purchase_df.CustomerID.astype("Int64").fillna(-1)
-        user_purchase_df.to_csv(tmp.name, header=False, sep='\t', index=False)
+        # user_purchase_df.to_csv(tmp.name, header=False, sep='\t', index=False)
 
+        user_purchase_df.columns = user_purchase_df.iloc[0]
+        print(user_purchase_df.shape)
+
+        user_purchase_df.drop([0], axis=0, inplace=True)
+        print(user_purchase_df.shape)
+        print(user_purchase_df.columns)
+
+        user_purchase_df.to_csv(tmp.name, sep='\t', index=False)
         psql_hook.bulk_load(table=postgres_table, tmp_file=tmp.name)
 
 
