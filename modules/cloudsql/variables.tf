@@ -16,7 +16,7 @@ variable "database_version" {
 
 variable "instance_tier" {
   description = "Sql instance tier"
-  default = "db-f1-micro"
+  default     = "db-f1-micro"
 }
 
 variable "disk_space" {
@@ -24,7 +24,12 @@ variable "disk_space" {
 }
 
 variable "database_name" {
-  description = "Name for the database to be created"
+  description = "Name for the database to be created for airflow"
+}
+
+variable "database_name_data" {
+  default     = "users_db"
+  description = "Name for the database to be created for data source"
 }
 
 variable "db_username" {
