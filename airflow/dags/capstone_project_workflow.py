@@ -116,7 +116,8 @@ with DAG(
         source_objects=[
             GCS_MOVIE_REVIEW_KEY, GCS_LOG_REVIEW_KEY
         ],
-        destination_object=GCS_RAW_ZONE
+        destination_object=GCS_RAW_ZONE,
+        trigger_rule=TriggerRule.ALL_SUCCESS
     )
 
     continue_process = DummyOperator(
@@ -155,10 +156,8 @@ with DAG(
     (
         start_workflow
         >> [
-            verify_user_purchases_existence,
-            verify_movie_review_existence,
-            verify_log_reviews_existence
-        ] 
+            verify_user_purchases_existence
+        ]
         >> create_table_user_purchases
         >> validate_data
         >> [
@@ -167,4 +166,13 @@ with DAG(
         ]
         >> ingest_user_purchase_data
         >> end_workflow
+    )
+
+    (
+        start_workflow
+        >> [
+            verify_movie_review_existence,
+            verify_log_reviews_existence
+        ]
+        >> copy_gcs_movie_review_to_gcs
     )
