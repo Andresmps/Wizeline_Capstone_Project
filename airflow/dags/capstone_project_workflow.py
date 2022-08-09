@@ -53,6 +53,54 @@ GCP_CONN_ID = "gcp_conn"
 POSTGRES_CONN_ID = "postgres_conn"
 POSTGRES_TABLE_NAME = "user_purchase"
 
+# Cluster config
+CLUSTER_CONFIG = {
+    "gce_cluster_config":{
+        "metadata": {
+            "PIP_PACKAGES": "pg8000 joblib sqlalchemy nltk "
+        }
+    },
+    "master_config": {
+        "num_instances": 1,
+        "machine_type_uri": "n1-standard-4",
+        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 1024},
+    },
+    "worker_config": {
+        "num_instances": 2,
+        "machine_type_uri": "n1-standard-4",
+        "disk_config": {"boot_disk_type": "pd-standard", "boot_disk_size_gb": 1024},
+
+    },
+    "software_config": {
+        "properties": {
+            "spark:spark.jars.packages": "com.databricks:spark-xml_2.12:0.15.0"
+        }
+    },
+    "initialization_actions": [
+        {
+            "executable_file": f"gs://{GCS_BUCKET_NAME}/{GCS_INIT_FILE_KEY}"
+        }
+    ]
+}
+
+TIMEOUT = {"seconds": 1 * 24 * 60 * 60}
+
+PYSPARK_CLEANING_JOB = {
+    "reference": {"project_id": PROJECT_ID},
+    "placement": {"cluster_name": CLUSTER_NAME},
+    "pyspark_job": {
+        "main_python_file_uri": f"gs://{GCS_BUCKET_NAME}/{GCS_PYSPARK_CLEANING_KEY}"
+    },
+}
+
+PYSPARK_AGG_JOB = {
+    "reference": {"project_id": PROJECT_ID},
+    "placement": {"cluster_name": CLUSTER_NAME},
+    "pyspark_job": {
+        "main_python_file_uri": f"gs://{GCS_BUCKET_NAME}/{GCS_PYSPARK_AGG_KEY}"
+    },
+}
+
 
 def ingest_data_from_gcs(
     gcs_bucket: str, gcs_object: str, postgres_table: str,
@@ -167,8 +215,47 @@ with DAG(
             "gcs_object": GCS_USER_PURCHASE_KEY,
             "postgres_table": POSTGRES_TABLE_NAME,
         },
-        trigger_rule=TriggerRule.ONE_SUCCESS,
+        trigger_rule=TriggerRule.ONE_SUCCESS
     )
+
+    create_cluster = DataprocCreateClusterOperator(
+        task_id="create_dataproc_cluster",
+        project_id=PROJECT_ID,
+        cluster_config=CLUSTER_CONFIG,
+        region=REGION,
+        cluster_name=CLUSTER_NAME,
+        gcp_conn_id=GCP_CONN_ID,
+        trigger_rule=TriggerRule.ALL_SUCCESS
+
+    )
+    # [END how_to_cloud_dataproc_create_cluster_operator]
+
+    pyspark_task = DataprocSubmitJobOperator(
+        task_id="pyspark_cleaning_task",
+        job=PYSPARK_CLEANING_JOB,
+        region=REGION,
+         project_id=PROJECT_ID,
+        gcp_conn_id=GCP_CONN_ID
+    )
+
+    pyspark_task = DataprocSubmitJobOperator(
+        task_id="pyspark_agg_task",
+        job=PYSPARK_CLEANING_JOB,
+        region=REGION,
+         project_id=PROJECT_ID,
+        gcp_conn_id=GCP_CONN_ID
+    )
+
+    # [START how_to_cloud_dataproc_delete_cluster_operator]
+    delete_cluster = DataprocDeleteClusterOperator(
+        task_id="delete_dataproc_cluster",
+        project_id=PROJECT_ID,
+        cluster_name=CLUSTER_NAME,
+        region=REGION,
+        gcp_conn_id=GCP_CONN_ID,
+        trigger_rule=TriggerRule.ALL_DONE
+    )
+
 
     (
         start_workflow
@@ -182,7 +269,7 @@ with DAG(
             continue_process
         ]
         >> ingest_user_purchase_data
-        >> end_workflow
+        
     )
 
     (
@@ -193,3 +280,13 @@ with DAG(
         ]
         >> copy_gcs_movie_review_to_gcs
     )
+
+    (
+        [ingest_user_purchase_data, copy_gcs_movie_review_to_gcs]
+        >> create_cluster
+        >> pyspark_task
+        # >> delete_cluster
+        >> end_workflow
+    )
+
+    
