@@ -287,8 +287,8 @@ with DAG(
         task_id="create_empty_obt_table",
         dataset_id=DATASET_NAME,
         table_id=OBT_TABLE_NAME,
-        gcp_conn_id=GCP_CONN_ID,
         gcs_schema_object=GCS_OBT_SCHEMA,
+        gcp_conn_id=GCP_CONN_ID,
         time_partitioning={
             "type": "DAY",
             "field": "insert_date"
@@ -304,8 +304,8 @@ with DAG(
         source_format="PARQUET",
         autodetect=True,
         time_partitioning={
-            "type": "DAY",
-            "field": "insert_date"
+            "time_partitioning_type": "DAY",
+            "time_partitioning_field": "insert_date"
         },
         write_disposition='WRITE_TRUNCATE',
         gcp_conn_id=GCP_CONN_ID
