@@ -14,4 +14,3 @@ instance_tier      = "db-f1-micro"
 disk_space         = 10
 database_name      = "dbadmin"
 db_username        = "postgres"
-db_password        = "%:J:1=Fx;,jKnV^s" # should be encoded with secrets
