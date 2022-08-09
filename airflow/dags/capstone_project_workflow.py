@@ -54,8 +54,8 @@ GCS_RAW_ZONE = F"gs://{GCS_BUCKET_NAME}/Raw/"
 GCS_INIT_FILE_KEY = "Data_proc_scripts/pip-install.sh"
 GCS_PYSPARK_CLEANING_KEY = "Data_proc_scripts/clean_data.py"
 GCS_PYSPARK_AGG_KEY = "Data_proc_scripts/agg_data.py"
-GCS_OBT_KEY = "Final/obt_table/"
-GCS_OBT_NESTED_KEY = "Final/obt_nested_table/"
+GCS_OBT_KEY = "Final/obt_table/*.parquet"
+GCS_OBT_NESTED_KEY = "Final/obt_nested_table/*.parquet"
 
 GCS_OBT_SCHEMA = F"gs://{GCS_BUCKET_NAME}/Others/obt_schema_bigquery.json"
 GCS_OBT_NESTED_SCHEMA = F"gs://{GCS_BUCKET_NAME}/Others/obt_nested_schema_bigquery.json"
@@ -313,12 +313,28 @@ with DAG(
         gcp_conn_id=GCP_CONN_ID
     )
 
-    # create_obt_nested_table = BigQueryCreateEmptyTableOperator(
-    #     task_id="create_empty_obt_nested_table",
-    #     dataset_id=DATASET_NAME,
-    #     table_id=OBT_NESTED_TABLE_NAME,
-    #     gcs_schema_object=GCS_OBT_NESTED_SCHEMA,
-    # )
+    create_obt_nested_table = BigQueryCreateEmptyTableOperator(
+        task_id="create_empty_obt_nested_table",
+        dataset_id=DATASET_NAME,
+        table_id=OBT_NESTED_TABLE_NAME,
+        gcs_schema_object=GCS_OBT_NESTED_SCHEMA,
+    )
+
+    load_obt_nested_table = GCSToBigQueryOperator(
+        task_id='gcs_obt_nested_parquet_to_bigquery',
+        bucket=GCS_BUCKET_NAME,
+        source_objects=[GCS_OBT_NESTED_KEY],
+        destination_project_dataset_table=f"{DATASET_NAME}.{OBT_NESTED_TABLE_NAME}",
+        # schema_fields=GCS_OBT_SCHEMA
+        source_format="PARQUET",
+        autodetect=True,
+        # time_partitioning={
+        #     "time_partitioning_type": "DAY",
+        #     "time_partitioning_field": "insert_date"
+        # },
+        write_disposition='WRITE_TRUNCATE',
+        gcp_conn_id=GCP_CONN_ID
+    )
 
     end_workflow = DummyOperator(task_id="end_workflow")
 
@@ -355,12 +371,20 @@ with DAG(
     #     >> delete_cluster
     # )
 
+    create_dataset
+    
     (
         create_dataset
         >> create_obt_table
         >> load_obt_table
-        # >> delete_cluster
         >> end_workflow
+        
     )
 
-    
+    (
+        create_dataset
+        >> create_obt_nested_table
+        >> load_obt_nested_table
+        >> end_workflow
+        
+    )
