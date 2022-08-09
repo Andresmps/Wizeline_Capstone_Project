@@ -230,7 +230,7 @@ with DAG(
     )
     # [END how_to_cloud_dataproc_create_cluster_operator]
 
-    pyspark_task = DataprocSubmitJobOperator(
+    pyspark_cleaning_task = DataprocSubmitJobOperator(
         task_id="pyspark_cleaning_task",
         job=PYSPARK_CLEANING_JOB,
         region=REGION,
@@ -238,7 +238,7 @@ with DAG(
         gcp_conn_id=GCP_CONN_ID
     )
 
-    pyspark_task = DataprocSubmitJobOperator(
+    pyspark_agg_task = DataprocSubmitJobOperator(
         task_id="pyspark_agg_task",
         job=PYSPARK_CLEANING_JOB,
         region=REGION,
@@ -284,7 +284,8 @@ with DAG(
     (
         [ingest_user_purchase_data, copy_gcs_movie_review_to_gcs]
         >> create_cluster
-        >> pyspark_task
+        >> pyspark_cleaning_task
+        >> pyspark_agg_task
         # >> delete_cluster
         >> end_workflow
     )
