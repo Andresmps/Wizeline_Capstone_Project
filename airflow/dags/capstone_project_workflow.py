@@ -133,90 +133,90 @@ with DAG(
     tags=[CLOUD_PROVIDER, ENV, API_VERSION],
 ) as dag:
 
-    start_workflow = DummyOperator(task_id="start_workflow")
+    # start_workflow = DummyOperator(task_id="start_workflow")
 
-    verify_user_purchases_existence = GCSObjectExistenceSensor(
-        task_id="verify_existence_user_purchase_file",
-        google_cloud_conn_id=GCP_CONN_ID,
-        bucket=GCS_BUCKET_NAME,
-        object=GCS_USER_PURCHASE_KEY
-    )
+    # verify_user_purchases_existence = GCSObjectExistenceSensor(
+    #     task_id="verify_existence_user_purchase_file",
+    #     google_cloud_conn_id=GCP_CONN_ID,
+    #     bucket=GCS_BUCKET_NAME,
+    #     object=GCS_USER_PURCHASE_KEY
+    # )
 
-    verify_movie_review_existence = GCSObjectExistenceSensor(
-        task_id="verify_existence_movie_review_file",
-        google_cloud_conn_id=GCP_CONN_ID,
-        bucket=GCS_BUCKET_NAME,
-        object=GCS_MOVIE_REVIEW_KEY
-    )
+    # verify_movie_review_existence = GCSObjectExistenceSensor(
+    #     task_id="verify_existence_movie_review_file",
+    #     google_cloud_conn_id=GCP_CONN_ID,
+    #     bucket=GCS_BUCKET_NAME,
+    #     object=GCS_MOVIE_REVIEW_KEY
+    # )
 
-    verify_log_reviews_existence = GCSObjectExistenceSensor(
-        task_id="verify_existence_log_review_file",
-        google_cloud_conn_id=GCP_CONN_ID,
-        bucket=GCS_BUCKET_NAME,
-        object=GCS_LOG_REVIEW_KEY
-    )
+    # verify_log_reviews_existence = GCSObjectExistenceSensor(
+    #     task_id="verify_existence_log_review_file",
+    #     google_cloud_conn_id=GCP_CONN_ID,
+    #     bucket=GCS_BUCKET_NAME,
+    #     object=GCS_LOG_REVIEW_KEY
+    # )
 
-    create_table_user_purchases = PostgresOperator(
-        task_id="create_table_user_purchases",
-        postgres_conn_id=POSTGRES_CONN_ID,
-        sql=f"""
-            CREATE TABLE IF NOT EXISTS {POSTGRES_TABLE_NAME} (
-                invoice_number varchar(20),
-                stock_code varchar(20),
-                detail varchar(1000),
-                quantity int,
-                invoice_date timestamp,
-                unit_price numeric(8,3),
-                customer_id int,
-                country varchar(20)
-            )
-        """,
-        trigger_rule=TriggerRule.ALL_SUCCESS
-    )
+    # create_table_user_purchases = PostgresOperator(
+    #     task_id="create_table_user_purchases",
+    #     postgres_conn_id=POSTGRES_CONN_ID,
+    #     sql=f"""
+    #         CREATE TABLE IF NOT EXISTS {POSTGRES_TABLE_NAME} (
+    #             invoice_number varchar(20),
+    #             stock_code varchar(20),
+    #             detail varchar(1000),
+    #             quantity int,
+    #             invoice_date timestamp,
+    #             unit_price numeric(8,3),
+    #             customer_id int,
+    #             country varchar(20)
+    #         )
+    #     """,
+    #     trigger_rule=TriggerRule.ALL_SUCCESS
+    # )
 
-    copy_gcs_movie_review_to_gcs = GCSToGCSOperator(
-        task_id="Copy_GDrive_Files_to_GCS",
-        source_bucket=GCS_BUCKET_NAME,
-        source_objects=[
-            GCS_MOVIE_REVIEW_KEY, GCS_LOG_REVIEW_KEY
-        ],
-        destination_object=GCS_RAW_ZONE,
-        gcp_conn_id=GCP_CONN_ID,
-        trigger_rule=TriggerRule.ALL_SUCCESS
-    )
+    # copy_gcs_movie_review_to_gcs = GCSToGCSOperator(
+    #     task_id="Copy_GDrive_Files_to_GCS",
+    #     source_bucket=GCS_BUCKET_NAME,
+    #     source_objects=[
+    #         GCS_MOVIE_REVIEW_KEY, GCS_LOG_REVIEW_KEY
+    #     ],
+    #     destination_object=GCS_RAW_ZONE,
+    #     gcp_conn_id=GCP_CONN_ID,
+    #     trigger_rule=TriggerRule.ALL_SUCCESS
+    # )
 
-    continue_process = DummyOperator(
-        task_id="continue_process"
-    )
+    # continue_process = DummyOperator(
+    #     task_id="continue_process"
+    # )
     
-    clear_table = PostgresOperator(
-        task_id="clear_table",
-        postgres_conn_id=POSTGRES_CONN_ID,
-        sql=f"DELETE FROM {POSTGRES_TABLE_NAME}",
-    )
+    # clear_table = PostgresOperator(
+    #     task_id="clear_table",
+    #     postgres_conn_id=POSTGRES_CONN_ID,
+    #     sql=f"DELETE FROM {POSTGRES_TABLE_NAME}",
+    # )
 
-    validate_data = BranchSQLOperator(
-        task_id="validate_no_data_in_the_db",
-        conn_id=POSTGRES_CONN_ID,
-        sql=f"SELECT COUNT(*) AS total_rows FROM {POSTGRES_TABLE_NAME}",
-        follow_task_ids_if_false=[continue_process.task_id],
-        follow_task_ids_if_true=[clear_table.task_id]
-    )
+    # validate_data = BranchSQLOperator(
+    #     task_id="validate_no_data_in_the_db",
+    #     conn_id=POSTGRES_CONN_ID,
+    #     sql=f"SELECT COUNT(*) AS total_rows FROM {POSTGRES_TABLE_NAME}",
+    #     follow_task_ids_if_false=[continue_process.task_id],
+    #     follow_task_ids_if_true=[clear_table.task_id]
+    # )
 
-    end_workflow = DummyOperator(task_id="end_workflow")
+   
 
-    ingest_user_purchase_data = PythonOperator(
-        task_id="ingest_user_purchase_data",
-        python_callable=ingest_data_from_gcs,
-        op_kwargs={
-            "gcp_conn_id": GCP_CONN_ID,
-            "postgres_conn_id": POSTGRES_CONN_ID,
-            "gcs_bucket": GCS_BUCKET_NAME,
-            "gcs_object": GCS_USER_PURCHASE_KEY,
-            "postgres_table": POSTGRES_TABLE_NAME,
-        },
-        trigger_rule=TriggerRule.ONE_SUCCESS
-    )
+    # ingest_user_purchase_data = PythonOperator(
+    #     task_id="ingest_user_purchase_data",
+    #     python_callable=ingest_data_from_gcs,
+    #     op_kwargs={
+    #         "gcp_conn_id": GCP_CONN_ID,
+    #         "postgres_conn_id": POSTGRES_CONN_ID,
+    #         "gcs_bucket": GCS_BUCKET_NAME,
+    #         "gcs_object": GCS_USER_PURCHASE_KEY,
+    #         "postgres_table": POSTGRES_TABLE_NAME,
+    #     },
+    #     trigger_rule=TriggerRule.ONE_SUCCESS
+    # )
 
     create_cluster = DataprocCreateClusterOperator(
         task_id="create_dataproc_cluster",
@@ -246,6 +246,7 @@ with DAG(
         gcp_conn_id=GCP_CONN_ID
     )
 
+ 
     # [START how_to_cloud_dataproc_delete_cluster_operator]
     # delete_cluster = DataprocDeleteClusterOperator(
     #     task_id="delete_dataproc_cluster",
@@ -256,34 +257,36 @@ with DAG(
     #     trigger_rule=TriggerRule.ALL_DONE
     # )
 
-
-    (
-        start_workflow
-        >> [
-            verify_user_purchases_existence
-        ]
-        >> create_table_user_purchases
-        >> validate_data
-        >> [
-            clear_table,
-            continue_process
-        ]
-        >> ingest_user_purchase_data
+    end_workflow = DummyOperator(task_id="end_workflow")
+    
+    # (
+    #     start_workflow
+    #     >> [
+    #         verify_user_purchases_existence
+    #     ]
+    #     >> create_table_user_purchases
+    #     >> validate_data
+    #     >> [
+    #         clear_table,
+    #         continue_process
+    #     ]
+    #     >> ingest_user_purchase_data
         
-    )
+    # )
 
-    (
-        start_workflow
-        >> [
-            verify_movie_review_existence,
-            verify_log_reviews_existence
-        ]
-        >> copy_gcs_movie_review_to_gcs
-    )
+    # (
+    #     start_workflow
+    #     >> [
+    #         verify_movie_review_existence,
+    #         verify_log_reviews_existence
+    #     ]
+    #     >> copy_gcs_movie_review_to_gcs
+    # )
 
+    # (
+    #     [ingest_user_purchase_data, copy_gcs_movie_review_to_gcs]
     (
-        [ingest_user_purchase_data, copy_gcs_movie_review_to_gcs]
-        >> create_cluster
+        create_cluster
         >> pyspark_cleaning_task
         >> pyspark_agg_task
         # >> delete_cluster
