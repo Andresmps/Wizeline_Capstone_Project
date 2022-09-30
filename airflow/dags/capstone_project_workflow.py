@@ -320,7 +320,7 @@ with DAG(
         gcs_schema_object=GCS_OBT_NESTED_SCHEMA,
     )
 
-    load_obt_nested_table = GCSToBigQueryOperator(
+    loady_obt_nested_table = GCSToBigQueryOperator(
         task_id='gcs_obt_nested_parquet_to_bigquery',
         bucket=GCS_BUCKET_NAME,
         source_objects=[GCS_OBT_NESTED_KEY],
