@@ -1,10 +1,13 @@
 import sqlalchemy
 import joblib
+import pg8000
 import json
 import os
 import re
 
-from pyspark.sql import SparkSession 
+from datetime import datetime
+
+from pyspark.sql import DataFrame, SparkSession 
 from pyspark.ml.feature import Tokenizer, StopWordsRemover
 from pyspark.sql.window import Window
 from pyspark.sql import functions as F
@@ -27,7 +30,7 @@ INSTANCE_CREDENTIALS = \
     f"gs://{BUCKET_NAME}/Others/env_vars.json"
 
 STOPWORDS_PATH = \
-    f"gs://{BUCKET_NAME}/Others/stopwords_english.pkl"
+    f"gs://{BUCKET_NAME}/Others(stopwords_english.pkl"
 
 REGIONS_PATH = \
     f"gs://{BUCKET_NAME}/Others/regions.csv"
@@ -332,7 +335,7 @@ def read_xml_load_to_gcs(row_tag, root_tag):
         )
 
     # Seasons addition
-    df_log_review_final = df_log_review_stage\
+    df_log_review_final = df_log_review_final\
         .withColumn(
             "month_day",
             F.date_format(
@@ -364,15 +367,15 @@ def read_xml_load_to_gcs(row_tag, root_tag):
 
     # Schema adjustments
 
-    df_log_review_final = df_log_review_final\
+    df_log_review_final = df_log_review_stage\
         .select(
             F.col("id_review").cast("int").alias("review_id"),
             F.col("device"),
             F.col("os"),
             F.col("location"),
             F.to_date(F.col("logDate"), format="MM-dd-yyyy").alias("log_date"),
-            F.col("phoneNumber").alias("phone_number"),
-            F.col("ipAddress").alias("ip_address"),
+            F.col("phone_number"),
+            F.col("ip_address"),
             F.col("browser"),
             F.col("region"),
         )
